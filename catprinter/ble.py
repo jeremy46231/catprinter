@@ -28,7 +28,7 @@ async def scan(name: Optional[str], timeout: int):
         logger.info("⏳ Trying to auto-discover a printer (MXW01 Service)...")
         possible_service_uuids = [
             cmds.MAIN_SERVICE_UUID.lower(),
-            "0000af30-0000-1000-8000-00805f9b34fb",
+            cmds.MAIN_SERVICE_UUID_ALT.lower(),
         ]
         filter_fn = lambda d, ad: any(
             uuid in [s.lower() for s in ad.service_uuids]
@@ -181,7 +181,7 @@ async def run_ble(image_data_buffer: bytes, device: Optional[str], intensity: in
                 service = None
                 possible_service_uuids = [
                     cmds.MAIN_SERVICE_UUID.lower(),
-                    "0000af30-0000-1000-8000-00805f9b34fb",
+                    cmds.MAIN_SERVICE_UUID_ALT.lower(),
                 ]
                 for s in client.services:
                     if s.uuid.lower() in possible_service_uuids:
@@ -243,7 +243,7 @@ async def run_ble(image_data_buffer: bytes, device: Optional[str], intensity: in
             status_cmd = cmds.cmd_get_status()
             await client.write_gatt_char(control_char.uuid, status_cmd, response=False)
             status_payload = await wait_for_notification(
-                notification_state, cmds.CommandIds.GET_STATUS, NOTIFICATION_TIMEOUT_S
+                notification_state, cmds.CommandIDs.GET_STATUS, NOTIFICATION_TIMEOUT_S
             )
             if status_payload is None:
                 return
@@ -278,7 +278,7 @@ async def run_ble(image_data_buffer: bytes, device: Optional[str], intensity: in
                 control_char.uuid, print_req_cmd, response=False
             )
             print_req_payload = await wait_for_notification(
-                notification_state, cmds.CommandIds.PRINT, NOTIFICATION_TIMEOUT_S
+                notification_state, cmds.CommandIDs.PRINT, NOTIFICATION_TIMEOUT_S
             )
             if print_req_payload is None:
                 return
@@ -320,7 +320,7 @@ async def run_ble(image_data_buffer: bytes, device: Optional[str], intensity: in
             )
             completion_payload = await wait_for_notification(
                 notification_state,
-                cmds.CommandIds.PRINT_COMPLETE,
+                cmds.CommandIDs.PRINT_COMPLETE,
                 print_timeout_duration,
             )
 

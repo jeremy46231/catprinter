@@ -6,7 +6,8 @@ from catprinter import logger
 
 
 def floyd_steinberg_dither(img):
-    """Applies the Floyd-Steinberg dithering to img, in place.
+    """
+    Applies the Floyd-Steinberg dithering to img, in place.
     img is expected to be a 8-bit grayscale image.
 
     Algorithm borrowed from wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering.
@@ -59,7 +60,8 @@ def atkinson_dither(img):
 
 
 def halftone_dither(img):
-    """Applies Halftone dithering using different sized circles
+    """
+    Applies Halftone dithering using different sized circles
 
     Algorithm is borrowed from https://github.com/GravO8/halftone
     """
@@ -170,7 +172,8 @@ def read_img(
 
 
 def show_preview(preview_img_uint8: np.ndarray):
-    """Displays the image preview using OpenCV.
+    """
+    Displays the image preview using OpenCV.
     Expects a uint8 numpy array where 0=Black, 255=White.
     """
     if preview_img_uint8.dtype != np.uint8:

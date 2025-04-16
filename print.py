@@ -14,7 +14,7 @@ from catprinter.img import read_img, show_preview
 
 def parse_args():
     args = argparse.ArgumentParser(
-        description="Prints an image on your MXW01 cat thermal printer"
+        description="Prints an image on your MXW01 thermal cat printer"
     )
     args.add_argument("filename", type=str)
     args.add_argument(
@@ -26,7 +26,7 @@ def parse_args():
     )
     args.add_argument(
         "-b",
-        "--img-binarization-algo",
+        "--dithering-algo",
         type=str,
         choices=["mean-threshold", "floyd-steinberg", "atkinson", "halftone", "none"],
         default="floyd-steinberg",
@@ -88,7 +88,7 @@ def main():
         bin_img_bool = read_img(
             args.filename,
             cmds.PRINTER_WIDTH_PIXELS,
-            args.img_binarization_algo,
+            args.dithering_algo,
         )
         logger.info(f"✅ Read image: {bin_img_bool.shape} (h, w) pixels")
 
