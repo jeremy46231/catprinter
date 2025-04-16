@@ -1,8 +1,8 @@
 ![Cat Printer](./media/hackoclock.jpg)
 
-Cat printer is a portable thermal printer sold on AliExpress for around $20.
+Cat printer is a portable thermal printer sold on AliExpress for around $20. This project supports models using the MXW01 protocol.
 
-This repository contains Python code for talking to the cat printer over Bluetooth Low Energy (BLE). The code has been reverse engineered from the [official Android app](https://play.google.com/store/apps/details?id=com.frogtosea.iprint&hl=en_US&gl=US).
+This repository contains Python code for talking to the cat printer over Bluetooth Low Energy (BLE). The code has been reverse engineered from various sources analyzing the MXW01 protocol.
 
 # Installation
 ```bash
@@ -19,10 +19,10 @@ $ pip install -r requirements.txt
 # Usage
 ```bash
 $ ./print.py --help
-usage: print.py [-h] [-l {debug,info,warn,error}] [-b {mean-threshold,floyd-steinberg,atkinson,halftone,none}] [-s] [-d DEVICE] [-e ENERGY]
+usage: print.py [-h] [-l {debug,info,warn,error}] [-b {mean-threshold,floyd-steinberg,atkinson,halftone,none}] [-s] [-d DEVICE] [--intensity INTENSITY]
                 filename
 
-prints an image on your cat thermal printer
+prints an image on your MXW01 cat thermal printer
 
 positional arguments:
   filename
@@ -36,36 +36,64 @@ options:
   -s, --show-preview    If set, displays the final image and asks the user for confirmation before printing.
   -d DEVICE, --device DEVICE
                         The printer's Bluetooth Low Energy (BLE) address (MAC address on Linux; UUID on macOS) or advertisement name (e.g.:
-                        "GT01", "GB02", "GB03"). If omitted, the the script will try to auto discover the printer based on its advertised BLE
+                        "MXW01", "GT01"). If omitted, the the script will try to auto discover the printer based on its advertised BLE
                         services.
-  -e ENERGY, --energy ENERGY
-                        Thermal energy. Between 0x0000 (light) and 0xffff (darker, default).
+  --intensity INTENSITY
+                        Print intensity/energy byte (0x00-0xFF, default 0x5D). Higher values generally produce darker prints. Accepts hex (0xNN) or decimal.
 ```
 
 # Example
 ```bash
+# Print test.png using default intensity (0x5D) and auto-discovery
 % ./print.py --show-preview test.png
+
+# Print test.png with higher intensity (darker) specifying device name
+% ./print.py --intensity 0x80 --device MXW01 test.png
+
+# Example Log Output (MXW01)
 ⏳ Applying Floyd-Steinberg dithering to image...
 ✅ Done.
-ℹ️ Displaying preview.
-🤔 Go ahead with print? [Y/n]?
 ✅ Read image: (42, 384) (h, w) pixels
-✅ Generated BLE commands: 2353 bytes
-⏳ Looking for a BLE device named GT01...
-✅ Got it. Address: 09480C21-65B5-477B-B475-C797CD0D6B1C: GT01
-⏳ Connecting to 09480C21-65B5-477B-B475-C797CD0D6B1C: GT01...
-✅ Connected: True; MTU: 104
-⏳ Sending 2353 bytes of data in chunks of 101 bytes...
-✅ Done.
+ℹ️  Displaying preview.
+🤔 Go ahead with print? [Y/n]? y
+Preparing image data buffer for MXW01...
+Image data buffer (2016 bytes) is smaller than minimum (4320 bytes). Adding 2304 bytes of padding.
+✅ Generated MXW01 image data buffer: 4320 bytes
+⏳ Trying to auto-discover a printer (MXW01 Service)...
+✅ Got it. Address: XX:XX:XX:XX:XX:XX: MXW01
+⏳ Attempting to connect to XX:XX:XX:XX:XX:XX...
+✅ Connected: True; MTU: 247
+Found service: 0000ae30-0000-1000-8000-00805f9b34fb
+✅ Found required characteristics.
+Starting notifications on 0000ae02-0000-1000-8000-00805f9b34fb...
+✅ Notifications started.
+Prepared 90 lines of image data (including padding if any).
+Setting intensity to 0x5d...
+Requesting printer status (A1)...
+Received Response ID: 0xa1, Payload: 0000000000000000006400000000
+Printer Status OK (Flag=0). State: 0x00, Battery: 100%
+Sending print request for 90 lines (A9)...
+Received Response ID: 0xa9, Payload: 00
+✅ Print request accepted (A9 response OK).
+Sending 4320 bytes of image data to 0000ae03-0000-1000-8000-00805f9b34fb...
+Sent chunk 50/90
+Sent chunk 90/90
+✅ Finished sending image data.
+Sending data flush command (AD)...
+Waiting up to 21.0s for print complete (AA)...
+Received Response ID: 0xaa, Payload: 00
+✅ Print Complete notification (AA) received. Payload: 00
+🎉 Print job successfully sent and acknowledged by printer.
+Stopping notifications...
+Disconnecting...
+BLE operation finished.
 ```
-
 
 # Different Algorithms
 
 **Mean Threshold:**
 
 ![Mean threshold](./media/grumpymeanthreshold.png)
-
 
 **Floyd Steinberg (default):**
 
